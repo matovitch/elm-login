@@ -13,11 +13,9 @@ type alias HMsg = H.Html Msg.Message
 type alias HAtt = H.Attribute Msg.Message
 type alias HTag = List HAtt -> List HMsg -> HMsg
 
-
 hList : HTag -> List HAtt -> HTag -> List(List HAtt, List HMsg) -> HMsg
 hList hGTag globals hLTag items =
     hGTag globals (List.map (uncurry hLTag) items)
-
 
 hListTextInput : String -> List (String, String) -> HMsg
 hListTextInput name items =
@@ -28,7 +26,7 @@ hListTextInput name items =
                         HA.title (snd x),
                         HA.type' (fst x), 
                         HA.placeholder (snd x), 
-                        HE.onInput (inputToMsg (snd x))
+                        HE.onInput (inputsToMsg (snd x))
                     ], 
                     []
                 )
@@ -36,18 +34,16 @@ hListTextInput name items =
         items
     |> hList H.div [HA.class name] H.input
 
-
-mainMenu         = ["Log In","Sign In"]
+menuTexts        = ["Log In","Sign In"]
 logInInputTexts  = ["Username", "Password"]
 signInInputTexts = logInInputTexts ++ ["Re-enter Password", "Email"]
 logInInputTypes  = ["text", "password"]
 signInInputTypes = logInInputTypes ++ ["password", "text"]
 
-
-clickToMsg: String -> Msg.Message
-clickToMsg logInOrSignIn =
+menuClickToMsg: String -> Msg.Message
+menuClickToMsg logInOrSignIn =
     List.map2 (,)
-        mainMenu
+        menuTexts
         [
             Msg.GotoLogIn, 
             Msg.GotoSignIn
@@ -56,8 +52,8 @@ clickToMsg logInOrSignIn =
     |> Dict.get logInOrSignIn
     |> Maybe.withDefault Msg.Nothing
 
-inputToMsg : String -> String -> Msg.Message
-inputToMsg input =
+inputsToMsg : String -> String -> Msg.Message
+inputsToMsg input =
     List.map2 (,)
         signInInputTexts
         [
@@ -75,8 +71,8 @@ view model =
     let
         logInOrSignIn =
             List.map 
-                (\x->([HA.title x, HE.onClick (clickToMsg x)], [H.text x]))
-                mainMenu
+                (\x->([HA.title x, HE.onClick (menuClickToMsg x)], [H.text x]))
+                menuTexts
             |> hList H.ul [HA.class "MainMenu"] H.button
 
         logInInputs =

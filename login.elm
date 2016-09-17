@@ -1,6 +1,6 @@
-import Html.App
 import Message as Msg
 import Model   as Mdl
+import Html.App
 import View
 
 main : Program Never
