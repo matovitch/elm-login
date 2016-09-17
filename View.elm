@@ -14,27 +14,27 @@ type alias HAtt = H.Attribute Msg.Message
 type alias HTag = List HAtt -> List HMsg -> HMsg
 
 
-hList : HTag -> List HAtt -> List HMsg -> HMsg
-hList htag globals items =
-    htag globals (List.map (\x -> H.li [] [x]) items)
+hList : HTag -> List HAtt -> HTag -> List(List HAtt, List HMsg) -> HMsg
+hList hGTag globals hLTag items =
+    hGTag globals (List.map (uncurry hLTag) items)
 
 
 hListTextInput : String -> List (String, String) -> HMsg
 hListTextInput name items =
     List.map 
         (
-            \x->
-                H.input 
-                [
-                    HA.title (snd x),
-                    HA.type' (fst x), 
-                    HA.placeholder (snd x), 
-                    HE.onInput (inputToMsg (snd x))
-                ] 
-                []
+            \x->( 
+                    [
+                        HA.title (snd x),
+                        HA.type' (fst x), 
+                        HA.placeholder (snd x), 
+                        HE.onInput (inputToMsg (snd x))
+                    ], 
+                    []
+                )
         )
         items
-    |> hList H.ul [HA.class name]
+    |> hList H.div [HA.class name] H.input
 
 
 mainMenu         = ["Log In","Sign In"]
@@ -75,9 +75,9 @@ view model =
     let
         logInOrSignIn =
             List.map 
-                (\x->(H.button [HA.title x, HE.onClick (clickToMsg x)] [H.text x]))
+                (\x->([HA.title x, HE.onClick (clickToMsg x)], [H.text x]))
                 mainMenu
-            |> hList H.ul [HA.class "MainMenu"]
+            |> hList H.ul [HA.class "MainMenu"] H.button
 
         logInInputs =
             List.map2
