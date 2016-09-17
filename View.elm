@@ -8,39 +8,46 @@ import Model           as Mdl
 import Maybe
 import Dict
 
-menuTexts        = ["Log In","Sign In"]
+
+logInSignInTexts = ["Log In","Sign In"]
 logInInputTexts  = ["Username", "Password"]
 logInInputTypes  = ["text"    , "password"]
 signInInputTexts = logInInputTexts ++ ["Re-enter Password", "Email"]
 signInInputTypes = logInInputTypes ++ ["password"         , "text"]
 allInputs        = signInInputTypes
 
-menuClickToMsg: String -> Msg.Message
-menuClickToMsg logInOrSignIn =
+toMsg : String -> List String -> a -> List a -> a
+toMsg key keys msg msgs =
     List.map2 (,)
-        menuTexts
+        keys
+        msgs
+    |> Dict.fromList
+    |> Dict.get key
+    |> Maybe.withDefault msg
+
+logInSignInToMsg: String -> Msg.Message
+logInSignInToMsg logInSignIn =
+    toMsg 
+        logInSignIn 
+        logInSignInTexts
+        Msg.Nothing
         [
             Msg.GotoLogIn, 
             Msg.GotoSignIn
-        ]
-    |> Dict.fromList
-    |> Dict.get logInOrSignIn
-    |> Maybe.withDefault Msg.Nothing
+        ]  
 
 inputsToMsg : String -> String -> Msg.Message
 inputsToMsg input =
-    List.map2 (,)
+    toMsg
+        input
         allInputs
+        (\s -> Msg.Nothing)
         [
             Msg.Username, 
             Msg.Password,
             Msg.ReEnterPassword,
             Msg.Email
         ]
-    |> Dict.fromList
-    |> Dict.get input
-    |> Maybe.withDefault (\s -> Msg.Nothing)
-
 
 type alias HMsg = H.Html Msg.Message
 type alias HAtt = H.Attribute Msg.Message
@@ -70,32 +77,32 @@ hListTextInput name items =
 view : Mdl.Model -> HMsg
 view model =
     let
-        logInOrSignIn =
+        logInSignIn =
             List.map 
-                (\x->([HA.title x, HE.onClick (menuClickToMsg x)], [H.text x]))
-                menuTexts
-            |> hList H.div [HA.class "MainMenu"] H.button
+                (\x->([HA.title x, HE.onClick (logInSignInToMsg x)], [H.text x]))
+                logInSignInTexts
+            |> hList H.div [HA.class "LogInSignIn"] H.button
 
         logInInputs =
-            List.map2
-                (,)
+            List.map2 (,)
                 logInInputTypes
                 logInInputTexts
             |> hListTextInput "LogInInputs"
 
         signInInputs =
-            List.map2
-                (,)
+            List.map2 (,)
                 signInInputTypes
                 signInInputTexts
             |> hListTextInput "SignInInputs"
+
+        runButton = (\msg -> \text -> [H.button [HE.onClick msg ] [H.text text]])
     in
     H.div 
         []
         (
-            logInOrSignIn ::
+            logInSignIn ::
             case model of
-                Mdl.LogIn  -> logInInputs  :: [H.button [HE.onClick Msg.RunLogIn ] [H.text "Log In !" ]]
-                Mdl.SignIn -> signInInputs :: [H.button [HE.onClick Msg.RunSignIn] [H.text "Sign In !"]]
+                Mdl.LogIn  -> logInInputs  :: runButton Msg.RunLogIn  "Log In !"
+                Mdl.SignIn -> signInInputs :: runButton Msg.RunSignIn "Sign In !"
         )
         
