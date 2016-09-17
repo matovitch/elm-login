@@ -8,6 +8,39 @@ import Model           as Mdl
 import Maybe
 import Dict
 
+menuTexts        = ["Log In","Sign In"]
+logInInputTexts  = ["Username", "Password"]
+logInInputTypes  = ["text"    , "password"]
+signInInputTexts = logInInputTexts ++ ["Re-enter Password", "Email"]
+signInInputTypes = logInInputTypes ++ ["password"         , "text"]
+allInputs        = signInInputTypes
+
+menuClickToMsg: String -> Msg.Message
+menuClickToMsg logInOrSignIn =
+    List.map2 (,)
+        menuTexts
+        [
+            Msg.GotoLogIn, 
+            Msg.GotoSignIn
+        ]
+    |> Dict.fromList
+    |> Dict.get logInOrSignIn
+    |> Maybe.withDefault Msg.Nothing
+
+inputsToMsg : String -> String -> Msg.Message
+inputsToMsg input =
+    List.map2 (,)
+        allInputs
+        [
+            Msg.Username, 
+            Msg.Password,
+            Msg.ReEnterPassword,
+            Msg.Email
+        ]
+    |> Dict.fromList
+    |> Dict.get input
+    |> Maybe.withDefault (\s -> Msg.Nothing)
+
 
 type alias HMsg = H.Html Msg.Message
 type alias HAtt = H.Attribute Msg.Message
@@ -34,38 +67,6 @@ hListTextInput name items =
         items
     |> hList H.div [HA.class name] H.input
 
-menuTexts        = ["Log In","Sign In"]
-logInInputTexts  = ["Username", "Password"]
-signInInputTexts = logInInputTexts ++ ["Re-enter Password", "Email"]
-logInInputTypes  = ["text", "password"]
-signInInputTypes = logInInputTypes ++ ["password", "text"]
-
-menuClickToMsg: String -> Msg.Message
-menuClickToMsg logInOrSignIn =
-    List.map2 (,)
-        menuTexts
-        [
-            Msg.GotoLogIn, 
-            Msg.GotoSignIn
-        ]
-    |> Dict.fromList
-    |> Dict.get logInOrSignIn
-    |> Maybe.withDefault Msg.Nothing
-
-inputsToMsg : String -> String -> Msg.Message
-inputsToMsg input =
-    List.map2 (,)
-        signInInputTexts
-        [
-            Msg.Username, 
-            Msg.Password,
-            Msg.ReEnterPassword,
-            Msg.Email
-        ]
-    |> Dict.fromList
-    |> Dict.get input
-    |> Maybe.withDefault (\s -> Msg.Nothing)
-
 view : Mdl.Model -> HMsg
 view model =
     let
@@ -73,7 +74,7 @@ view model =
             List.map 
                 (\x->([HA.title x, HE.onClick (menuClickToMsg x)], [H.text x]))
                 menuTexts
-            |> hList H.ul [HA.class "MainMenu"] H.button
+            |> hList H.div [HA.class "MainMenu"] H.button
 
         logInInputs =
             List.map2
