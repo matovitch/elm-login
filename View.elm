@@ -14,7 +14,7 @@ logInInputTexts  = ["Username", "Password"]
 logInInputTypes  = ["text"    , "password"]
 signInInputTexts = logInInputTexts ++ ["Re-enter Password", "Email"]
 signInInputTypes = logInInputTypes ++ ["password"         , "text"]
-allInputs        = signInInputTypes
+allInputTexts    = logInInputTexts
 
 toMsg : String -> List String -> a -> List a -> a
 toMsg key keys msg msgs =
@@ -40,7 +40,7 @@ inputsToMsg : String -> String -> Msg.Message
 inputsToMsg input =
     toMsg
         input
-        allInputs
+        allInputTexts
         (\s -> Msg.Nothing)
         [
             Msg.Username, 
@@ -72,7 +72,7 @@ hListTextInput name items =
                 )
         )
         items
-    |> hList H.div [HA.class name] H.input
+    |> hList H.form [HA.class name] H.input
 
 view : Mdl.Model -> HMsg
 view model =
@@ -87,21 +87,22 @@ view model =
             List.map2 (,)
                 logInInputTypes
                 logInInputTexts
-            |> hListTextInput "LogInInputs"
+            |> hListTextInput "LogInForm"
 
         signInInputs =
             List.map2 (,)
                 signInInputTypes
                 signInInputTexts
-            |> hListTextInput "SignInInputs"
+            |> hListTextInput "SignInForm"
 
         runButton = (\msg -> \text -> [H.button [HE.onClick msg ] [H.text text]])
     in
     H.div 
         []
         (
+            H.text model.websocketReply ::
             logInSignIn ::
-            case model of
+            case model.logInOrSignIn of
                 Mdl.LogIn  -> logInInputs  :: runButton Msg.RunLogIn  "Log In !"
                 Mdl.SignIn -> signInInputs :: runButton Msg.RunSignIn "Sign In !"
         )

@@ -9,4 +9,6 @@ type Message =
     Email           String |
     RunLogIn               |
     RunSignIn              |
+    WebsocketReply  String |
     Nothing
+    
